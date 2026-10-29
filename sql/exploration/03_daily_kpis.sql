@@ -1,4 +1,5 @@
 -- Daily users, sessions, purchases, revenue.
+-- Cost: scans ~1.04 GB (BigQuery dry run).
 
 with events as (
   select

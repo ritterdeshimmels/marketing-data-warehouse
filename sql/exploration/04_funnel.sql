@@ -1,4 +1,5 @@
 -- E-commerce funnel: how many users reach each step?
+-- Cost: scans ~145 MB (BigQuery dry run).
 
 with user_steps as (
   select

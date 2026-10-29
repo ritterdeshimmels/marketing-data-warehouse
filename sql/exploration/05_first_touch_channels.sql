@@ -1,4 +1,5 @@
 -- Revenue by the user's FIRST acquisition channel (GA4 traffic_source).
+-- Cost: scans ~234 MB (BigQuery dry run).
 -- Compare later with session-level and multi-touch attribution.
 
 select

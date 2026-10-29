@@ -1,4 +1,5 @@
 -- What's in the dataset? Date range, volume, event types.
+-- Cost: scans ~244 MB (BigQuery dry run).
 
 select
   min(event_date)                 as first_day,

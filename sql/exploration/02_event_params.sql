@@ -1,4 +1,5 @@
 -- Which keys live inside event_params, and in which value type?
+-- Cost: scans ~547 MB (BigQuery dry run).
 -- Limited to one month to save sandbox quota.
 
 select
