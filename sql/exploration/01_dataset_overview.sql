@@ -1,13 +1,16 @@
--- 01 Dataset-Überblick
--- Frage: Welchen Zeitraum deckt der GA4-Beispieldatensatz ab und wie groß ist er?
--- Datensatz: Google Merchandise Store, GA4-Export (obfuskiert), Nov 2020 bis Jan 2021.
--- Kosten: liest nur drei schmale Spalten, daher wenig gescannte Bytes trotz aller Tage.
+-- What's in the dataset? Date range, volume, event types.
 
-SELECT
-  MIN(PARSE_DATE('%Y%m%d', event_date)) AS erster_tag,
-  MAX(PARSE_DATE('%Y%m%d', event_date)) AS letzter_tag,
-  COUNT(DISTINCT event_date)            AS anzahl_tage,
-  COUNT(*)                              AS events,
-  COUNT(DISTINCT user_pseudo_id)        AS nutzer,
-  COUNT(DISTINCT event_name)            AS event_typen
-FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`;
+select
+  min(event_date)                 as first_day,
+  max(event_date)                 as last_day,
+  count(*)                        as events,
+  count(distinct user_pseudo_id)  as users,
+  count(distinct event_name)      as event_types
+from `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+where _table_suffix between '20201101' and '20210131';
+
+select event_name, count(*) as events
+from `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+where _table_suffix between '20201101' and '20210131'
+group by 1
+order by 2 desc;

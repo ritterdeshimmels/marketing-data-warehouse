@@ -1,0 +1,15 @@
+name: marketing_dw
+version: "1.0.0"
+config-version: 2
+profile: marketing_dw
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+
+vars:
+  start_date: "20201101"
+  end_date: "20210131"
+
+models:
+  marketing_dw:
+    +materialized: table

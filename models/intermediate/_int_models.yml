@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_sessions
+    description: One row per GA4 session.
+    columns:
+      - name: session_key
+        tests: [unique, not_null]
+      - name: session_date
+        tests: [not_null]

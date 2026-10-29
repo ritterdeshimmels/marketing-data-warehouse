@@ -1,49 +1,61 @@
-# Marketing Data Warehouse
+# Marketing Data Warehouse (GA4 + BigQuery + dbt)
 
-Ein Marketing-Data-Stack auf öffentlichen GA4-Daten: von rohen Events über ein
-Sessionmodell bis zum Vergleich von Attributionsmodellen.
+End-to-end marketing analytics pipeline: raw GA4 event data in BigQuery is modeled with dbt into sessions, channel performance and (next) multi-touch attribution, then visualized in Looker Studio.
 
-**Stack:** BigQuery · SQL · dbt · Python · Looker Studio
+**Goal:** show how raw tracking data becomes trustworthy marketing KPIs — and how attribution choices change which channel "wins".
 
-## Problem
+## Architecture
 
-Plattformen wie Google Ads und Meta rechnen sich ihre Conversions jeweils selbst zu.
-Wer Budget verteilt, braucht eine eigene, neutrale Sicht auf die Daten: Welcher Kanal
-bringt wirklich Kunden, und wie stark hängt die Antwort vom Attributionsmodell ab?
-
-## Daten
-
-[GA4-Beispieldatensatz](https://developers.google.com/analytics/bigquery/web-ecommerce-demo-dataset)
-des Google Merchandise Store (`bigquery-public-data.ga4_obfuscated_sample_ecommerce`),
-Nov 2020 bis Jan 2021. Öffentlich, keine Firmendaten.
-
-## Architektur (Ziel)
-
-```
-GA4-Export (BigQuery)
-   └─ staging      Events bereinigen, Parameter entpacken
-       └─ intermediate   Sessions, Nutzer, Touchpoints
-           └─ marts      Attribution (First Click, Last Click, linear) pro Kanal
-                └─ Looker Studio Dashboard
+```mermaid
+flowchart LR
+  A[GA4 public sample<br/>BigQuery] --> B[stg_ga4__events<br/>flattened events]
+  B --> C[int_sessions<br/>one row per session]
+  C --> D[mart_daily_kpis<br/>channel x day]
+  C --> E[attribution models<br/>coming next]
+  F[Synthetic ad spend<br/>coming next] --> G[ROAS by channel]
+  D --> H[Looker Studio]
+  E --> H
+  G --> H
 ```
 
-## Struktur
+## Data
 
-| Ordner | Inhalt |
-|--------|--------|
-| `sql/exploration/` | 01–05: Datensatz kennenlernen |
-| `sql/analysis/` | 06–10: eigene Analysen |
-| `dbt/` | Datenmodell (ab Woche 7) |
-| `python/` | Ad-Spend-Daten und Analysen (ab Woche 10) |
-| `docs/` | Lernlog, Datenqualität |
+- `bigquery-public-data.ga4_obfuscated_sample_ecommerce` — real GA4 export from the Google Merchandise Store, Nov 2020 – Jan 2021.
+- The dataset is obfuscated: some values appear as `<Other>` or `(data deleted)`. This is expected and documented in the analysis.
 
 ## Roadmap
 
-- [x] Repo-Struktur und Explorationsabfragen
-- [ ] Fünf eigene SQL-Analysen (Woche 3)
-- [ ] Sessionmodell, Kohortenanalyse, Datenlücken dokumentiert (Woche 6)
-- [ ] dbt-Projekt mit drei Attributionsmodellen, Dashboard (Woche 9)
+- [x] Exploration queries (`sql/exploration/`)
+- [x] dbt staging model: flattened GA4 events
+- [x] dbt intermediate model: sessions with source/medium and landing page
+- [x] dbt mart: daily KPIs by channel
+- [ ] Attribution: first-click vs. last-click vs. linear
+- [ ] Synthetic ad spend per channel + ROAS
+- [ ] Looker Studio dashboard (screenshot in this README)
 
-## Ergebnisse
+## Setup
 
-_Folgt mit Screenshot des Dashboards._
+1. Create a Google Cloud project and open BigQuery. The free **BigQuery sandbox** is enough (no credit card; tables expire after 60 days).
+2. Run the queries in `sql/exploration/` in the BigQuery console, in order.
+3. Install the tooling:
+   ```bash
+   python -m venv .venv && source .venv/bin/activate
+   pip install -r requirements.txt
+   gcloud auth application-default login
+   ```
+4. Copy `profiles.yml.example` to `~/.dbt/profiles.yml` and set your project ID. Keep `location: US` — the public dataset lives in the US.
+5. Build:
+   ```bash
+   dbt debug
+   dbt build
+   ```
+
+## Project structure
+
+```
+sql/exploration/   ad-hoc queries to understand the data
+macros/            event_param() helper for GA4 nested params
+models/staging/    1:1 cleaned source data
+models/intermediate/ business entities (sessions)
+models/marts/      reporting tables
+```
